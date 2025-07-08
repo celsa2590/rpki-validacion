@@ -35,13 +35,17 @@ python3 setup.py install --user
 python3 -c "import pytricia; print('PyTricia OK')"
 ```
 
-### 5. Correr script de validación global
+### 5. Correr script de validación global IPv4
 
 ```bash
 python3 valida_rpki_peer_NIC_IPv4_v2.py
-python3 valida_rpki_peer_NIC_IPv6_v2.py
 ```
 
+### 6. Correr script de validación global IPv6
+
+```bash
+python3 valida_rpki_peer_NIC_IPv6_v2.py
+```
 ---
 
 ## 🐍 Scripts incluidos
@@ -50,11 +54,11 @@ python3 valida_rpki_peer_NIC_IPv6_v2.py
 |----------------------------------|-----------------------------------------------------------|
 | `valida_rpki_peer_NIC_IPv4_v2.py` | Valida rutas IPv4 del peer especificado contra ROAs      |
 | `valida_rpki_peer_NIC_IPv6_v2.py` | Valida rutas IPv6 del peer especificado contra ROAs      |
+| `extrae_prefijos_chile.py`        | Extrae prefijos de Chile del archivo delegated-lacnic-latest|
 | `filtra_prefijos_chilenos.py`     | Selecciona prefijos IPv4 de Chile desde rib.txt          |
 | `filtra_prefijos_chilenos_IPv6.py`| Selecciona prefijos IPv6 de Chile desde rib.txt          |
 | `valida_prefijos_filtrados.py`    | Valida solo los prefijos chilenos (IPv4)                 |
 | `valida_prefijos_filtrados_IPv6.py`| Valida solo los prefijos chilenos (IPv6)                |
-| `extrae_prefijos_chile.py`        | Extrae prefijos de Chile del archivo delegated-lacnic-latest|
 
 ---
 
@@ -87,9 +91,9 @@ wget https://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-latest
 python3 extrae_prefijos_chile.py
 ```
 
-3. Luego, los scripts de filtrado `filtra_prefijos_chilenos.py` y `filtra_prefijos_chilenos_IPv6.py` utilizan esos archivos `.txt` para seleccionar únicamente las rutas chilenas desde el dump BGP.
+3. Luego, ejecuta los scripts de filtrado `filtra_prefijos_chilenos.py` y `filtra_prefijos_chilenos_IPv6.py` que utilizan los archivos `chile_prefixes_ipv4.txt` y `chile_prefixes_ipv6.txt` respectivamente, para seleccionar únicamente las rutas chilenas desde el dump BGP.
 
-4. Finalmente, los scripts de validación `valida_prefijos_filtrados.py` y `valida_prefijos_filtrados_IPv6.py` utilizan los archivos generados en el paso anterior para analizar únicamente los prefijos chilenos y generar las estadísticas finales de validación RPKI.
+4. Finalmente, ejecuta los scripts de validación `valida_prefijos_filtrados.py` y `valida_prefijos_filtrados_IPv6.py` utilizan los archivos generados en el paso anterior para analizar únicamente los prefijos chilenos y generar las estadísticas finales de validación RPKI.
 
 ---
 
