@@ -93,7 +93,7 @@ python3 extrae_prefijos_chile.py
 
 3. Luego, ejecuta los scripts de filtrado `filtra_prefijos_chilenos.py` y `filtra_prefijos_chilenos_IPv6.py` que utilizan los archivos `chile_prefixes_ipv4.txt` y `chile_prefixes_ipv6.txt` respectivamente, para seleccionar únicamente las rutas chilenas desde el dump BGP.
 
-4. Finalmente, ejecuta los scripts de validación `valida_prefijos_filtrados.py` y `valida_prefijos_filtrados_IPv6.py` utilizan los archivos generados en el paso anterior para analizar únicamente los prefijos chilenos y generar las estadísticas finales de validación RPKI.
+4. Finalmente, ejecuta los scripts de validación `valida_prefijos_filtrados.py` y `valida_prefijos_filtrados_IPv6.py` que utilizan los archivos generados en el paso anterior para analizar únicamente los prefijos chilenos y generar las estadísticas finales de validación RPKI.
 
 ---
 
