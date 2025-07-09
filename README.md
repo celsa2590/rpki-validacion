@@ -24,6 +24,7 @@ bgpdump -m rib.20250617.0000 > rib.txt
 ```bash
 routinator vrps --output vrps.json --format json
 ```
+Leer documento README_Routinator.md para más detalle.
 
 ### 4. Instalar dependencias
 
