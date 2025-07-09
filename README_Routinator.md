@@ -96,6 +96,14 @@ sudo timedatectl set-timezone America/Santiago
 
 ---
 
+## ✅ 8. Obtener archivo de ROAs
+
+```bash
+routinator vrps --output vrps.json --format json
+```
+
+---
+
 ## 🙌 Créditos
 
 Instrucciones compiladas por Celsa Sánchez — NIC Chile  
