@@ -1,27 +1,31 @@
 import json
+import pytricia
+import collections
 from ipaddress import ip_network, IPv4Network
-import csv
 from tqdm import tqdm
+import csv
 
-# --- CONFIGURACIÓN ---
 INPUT_FILE = "prefijos_chilenos_nic_chile_ipv4.csv"
 DESCRIPCION_PEER = "NIC Chile"
 
-# --- Cargar ROAs IPv4 desde vrps.json como lista ---
+# --- Cargar ROAs desde vrps.json (solo IPv4) ---
 with open("vrps.json") as f:
     roas = json.load(f)["roas"]
 
-roas_v4_list = []
+roa_trie = pytricia.PyTricia(32)
+roa_dict = collections.defaultdict(list)
+
 for roa in roas:
     prefix = roa["prefix"]
     if ":" in prefix:
-        continue
+        continue  # Saltar IPv6
     asn = roa["asn"].replace("AS", "")
     maxlen = int(roa["maxLength"])
-    net = ip_network(prefix)
-    roas_v4_list.append((asn, net, maxlen))
+    if prefix not in roa_trie:
+        roa_trie[prefix] = True
+    roa_dict[prefix].append((asn, maxlen))
 
-# --- Función de validación optimizada ---
+# --- Función de validación optimizada con Trie ---
 def validar(asn, prefix):
     try:
         net = ip_network(prefix)
@@ -30,26 +34,39 @@ def validar(asn, prefix):
     except ValueError:
         return "notfound"
 
-    hay_cobertura = False
-    for roa_asn, roa_net, maxlen in roas_v4_list:
-        if net.subnet_of(roa_net):
-            hay_cobertura = True
-            if asn == roa_asn and net.prefixlen <= maxlen:
-                return "valid"
-    return "invalid" if hay_cobertura else "notfound"
+    matches = []
+    try:
+        covering_prefix = roa_trie.get_key(net)
+        while covering_prefix:
+            matches.extend(roa_dict.get(covering_prefix, []))
+            covering_prefix = roa_trie.parent(covering_prefix)
+    except Exception:
+        return "notfound"
 
-# --- Validar prefijos del archivo filtrado ---
-contadores = {"valid": 0, "invalid": 0, "notfound": 0}
-csv_out = open(f"resultados_{DESCRIPCION_PEER.lower().replace(' ', '_')}_chile_ipv4.csv", "w", newline="")
+    if not matches:
+        return "notfound"
+
+    for roa_asn, maxlen in matches:
+        if asn == roa_asn and net.prefixlen <= maxlen:
+            return "valid"
+
+    return "invalid"
+
+# --- Salida CSV ---
+csv_out = open(f"resultados_{DESCRIPCION_PEER.lower().replace(' ', '_')}_filtrados_ipv4.csv", "w", newline="")
 writer = csv.writer(csv_out)
 writer.writerow(["prefix", "origin_asn", "validation_state", "peer_ip"])
 
+contadores = {"valid": 0, "invalid": 0, "notfound": 0}
+
+# --- Leer input CSV ---
 with open(INPUT_FILE) as f:
     reader = csv.reader(f)
-    next(reader)  # skip header
+    next(reader)  # Saltar encabezado
     filas = list(reader)
 
-for fila in tqdm(filas, desc="Validando prefijos"):
+# --- Validar con barra de progreso ---
+for fila in tqdm(filas, desc="Validando prefijos IPv4"):
     prefix, origin_asn, peer_ip = fila
     estado = validar(origin_asn, prefix)
     contadores[estado] += 1
@@ -57,6 +74,10 @@ for fila in tqdm(filas, desc="Validando prefijos"):
 
 csv_out.close()
 
+# --- Imprimir resultados ---
+total = sum(contadores.values())
 print(f"\n✅ Resultados para rutas IPv4 chilenas desde {DESCRIPCION_PEER}:")
 for estado in ["valid", "invalid", "notfound"]:
-    print(f"  {estado.upper()}: {contadores[estado]}")
+    cantidad = contadores[estado]
+    porcentaje = (cantidad / total * 100) if total else 0
+    print(f"  {estado.upper()}: {cantidad} - {porcentaje:.1f}%")
